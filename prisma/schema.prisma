@@ -1,0 +1,162 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["createMany", "fullTextSearch"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRESQL_DB_URL")
+}
+
+model User {
+  id             Int            @id @default(autoincrement())
+  nickname       String?        @unique @db.VarChar(20)
+  email          String?        @unique @db.VarChar(50)
+  password       String?        @db.VarChar(1000)
+  social_id      String?        @unique @db.VarChar(30)
+  social_type_id Int?
+  created_at     DateTime       @default(now()) @db.Timestamptz(3)
+  updated_at     DateTime       @updatedAt @db.Timestamptz(3)
+  membership_id  Int?
+  movie_comments MovieComment[]
+  movie_likes    MovieLike[]
+  posts          Post[]
+  post_comments  PostComment[]
+  post_likes     PostLike[]
+  membership     Membership?    @relation(fields: [membership_id], references: [id])
+  social_type    SocialType?    @relation(fields: [social_type_id], references: [id])
+  scraps PostScrap[]
+}
+
+model SocialType {
+  id    Int    @id @default(autoincrement())
+  name  String @db.VarChar(10)
+  users User[]
+}
+
+model Movie {
+  id             Int            @id @default(autoincrement())
+  name           String         @db.VarChar(100)
+  director       String?        @db.VarChar(50)
+  actor          String?
+  category_id    Int?
+  region_id      Int?
+  release_date   DateTime?      @db.Timestamptz(6)
+  running_time   String?        @db.VarChar(20)
+  poster_img     String?
+  rating_id      Int?
+  english_name   String?        @db.VarChar(200)
+  summary        String?
+  category       Category?      @relation(fields: [category_id], references: [id], onDelete: Restrict)
+  rating         Rating?        @relation(fields: [rating_id], references: [id], onDelete: Restrict)
+  region         Region?        @relation(fields: [region_id], references: [id], onDelete: Restrict)
+  movie_comments MovieComment[]
+  movie_likes    MovieLike[]
+}
+
+model Category {
+  id     Int     @id @default(autoincrement())
+  name   String  @db.VarChar(20)
+  movies Movie[]
+  posts  Post[]
+}
+
+model Region {
+  id     Int     @id @default(autoincrement())
+  name   String
+  moives Movie[]
+}
+
+model MovieLike {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  movie_id   Int
+  created_at DateTime @default(now()) @db.Timestamptz(3)
+  movie      Movie    @relation(fields: [movie_id], references: [id])
+  user       User     @relation(fields: [user_id], references: [id])
+}
+
+model MovieComment {
+  id         Int      @id @default(autoincrement())
+  content    String   @db.VarChar(400)
+  user_id    Int
+  movie_id   Int
+  created_at DateTime @default(now()) @db.Timestamptz(3)
+  updated_at DateTime @updatedAt @db.Timestamptz(3)
+  movie      Movie    @relation(fields: [movie_id], references: [id])
+  user       User     @relation(fields: [user_id], references: [id])
+}
+
+model Post {
+  id              Int             @id @default(autoincrement())
+  title           String          @db.VarChar(100)
+  content         String          @db.VarChar(4000)
+  user_id         Int
+  category_id     Int
+  thumbnail       String          @db.VarChar(2000)
+  spoiler_info_id Int
+  created_at      DateTime        @default(now()) @db.Timestamptz(3)
+  updated_at      DateTime        @updatedAt @db.Timestamptz(3)
+  weeklyLikeCount Int
+  url             ImgUrlForPost[]
+  category        Category        @relation(fields: [category_id], references: [id])
+  spoiler_info    SpoilerInfo     @relation(fields: [spoiler_info_id], references: [id])
+  user            User            @relation(fields: [user_id], references: [id])
+  comments        PostComment[]
+  likes           PostLike[]
+  scraps PostScrap[]
+}
+
+model SpoilerInfo {
+  id    Int    @id @default(autoincrement())
+  name  String @db.VarChar(10)
+  posts Post[]
+}
+
+model PostLike {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  post_id    Int
+  created_at DateTime @default(now()) @db.Timestamptz(3)
+  post       Post     @relation(fields: [post_id], references: [id])
+  user       User     @relation(fields: [user_id], references: [id])
+}
+
+model PostComment {
+  id         Int      @id @default(autoincrement())
+  content    String   @db.VarChar(400)
+  user_id    Int
+  post_id    Int
+  created_at DateTime @default(now()) @db.Timestamptz(3)
+  updated_at DateTime @updatedAt @db.Timestamptz(3)
+  post       Post     @relation(fields: [post_id], references: [id])
+  user       User     @relation(fields: [user_id], references: [id])
+}
+
+model ImgUrlForPost {
+  id      Int    @id @default(autoincrement())
+  url     String @db.VarChar(2000)
+  post_id Int
+  post    Post   @relation(fields: [post_id], references: [id])
+}
+
+model Rating {
+  id    Int     @id @default(autoincrement())
+  name  String  @db.VarChar(20)
+  movie Movie[]
+}
+
+model Membership {
+  id    Int     @id @default(autoincrement())
+  name  String  @db.VarChar(10)
+  price Decimal @db.Decimal(10, 2)
+  users User[]
+}
+
+model PostScrap {
+  id Int @id @default(autoincrement())
+  user_id Int
+  post_id Int
+  post Post @relation(fields: [post_id], references: [id])
+  user User @relation(fields: [user_id], references: [id])
+}
