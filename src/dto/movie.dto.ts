@@ -1,4 +1,5 @@
 import { Category, Region } from '@prisma/client';
+
 interface movieDataDTO {
   category?: Category;
   region?: Region;
