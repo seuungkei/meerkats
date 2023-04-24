@@ -9,8 +9,9 @@ class movieController {
     const { movieId } = req.params;
     const userId: string = req.body.userId;
 
-    const movieTraileDetailData = await this.Service.movieTraileDetail(Number(movieId), Number(userId));
-    return res.status(200).json({ movieTraileDetailData });
+    const movieTrailerDetailData = await this.Service.movieTraileDetail(Number(movieId), Number(userId));
+
+    return res.status(200).json({ movieTrailerDetailData });
   });
 }
 
