@@ -8,6 +8,6 @@ const router = express.Router();
 
 const getMovieDataController = new movieController(new movieService(new movieRepository()));
 
-router.get('/:movieId', getMovieDataController.movieDetailRead);
+router.get('/:movieId', getMovieDataController.movieTraileDetail);
 
 export { router as movieRouter };

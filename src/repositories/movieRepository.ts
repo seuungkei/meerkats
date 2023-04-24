@@ -23,8 +23,8 @@ class movieRepository {
     this.prisma = new PrismaClient();
   }
 
-  movieDetailRead = async (movieId: number, userId: number) => {
-    const movieDetailData = await this.prisma.movie.findUnique({
+  movieTraileDetail = async (movieId: number, userId: number) => {
+    const movieTraileDetailData = await this.prisma.movie.findUnique({
       where: {
         id: movieId,
       },
@@ -40,15 +40,15 @@ class movieRepository {
       },
     });
 
-    if (!movieDetailData) throw new MyCustomError('zz');
+    if (!movieTraileDetailData) throw new MyCustomError('zz');
 
-    const movieLikeCount = await this.prisma.movieLike.count({
+    const movieTrailerLikes = await this.prisma.movieLike.count({
       where: {
         movie_id: movieId,
       },
     });
 
-    const movieComment = await this.prisma.movieComment.findMany({
+    const movieTrailerComments = await this.prisma.movieComment.findMany({
       where: {
         movie_id: movieId,
       },
@@ -64,19 +64,33 @@ class movieRepository {
       },
     });
 
-    const movieblog = await this.prisma.post.findMany({
+    const blogAboutMovieTrailers = await this.prisma.post.findMany({
       where: {
-        category_id: movieDetailData?.category.id,
+        category_id: movieTraileDetailData?.category.id,
       },
       select: {
         id: true,
         user_id: true,
         title: true,
         thumbnail: true,
+        weeklyLikeCount: true,
       },
     });
 
-    return { ...movieDetailData, movieLikeCount, movieComment };
+    const blogLikesAndPopularitySorting = await Promise.all(
+      blogAboutMovieTrailers.map(async (blog) => {
+        const blogLikes = await this.prisma.postLike.count({
+          where: {
+            post_id: blog.id,
+          },
+        });
+        return { ...blog, blogLikes };
+      })
+    );
+
+    blogLikesAndPopularitySorting.sort((a, b) => b.weeklyLikeCount - a.weeklyLikeCount);
+
+    return { ...movieTraileDetailData, movieTrailerLikes, movieTrailerComments, blogLikesAndPopularitySorting };
   };
 }
 
