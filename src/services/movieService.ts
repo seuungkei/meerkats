@@ -16,21 +16,21 @@ class MovieService {
   }
 
   public getMovieTrailerDetail = async (movieId: number, skip: number, take: number) => {
-    const movieTrailerDetailData = await this.Repository.getMovieTraileDetail(movieId, skip, take);
+    const movieTrailerDetailData = await this.Repository.getMovieTrailerDetail(movieId, skip, take);
 
     const videoId = await this.getMovieTrailerVideoId(movieTrailerDetailData.name);
-    const [videoData] = await this.getMovieTrailerData(videoId);
-    const playlistData = await this.getmovieTrailerPlaylist(videoId);
+    const [video] = await this.getMovieTrailerData(videoId);
+    const playlistData = await this.getMovieTrailerPlaylist(videoId);
 
     const result = {
       ...movieTrailerDetailData,
       movieTrailerMainData: {
-        videoId: videoData.id,
-        title: videoData.snippet.title,
-        thumbnail: videoData.snippet.thumbnails.default.url,
-        channel: videoData.snippet.channelTitle,
-        viewCount: videoData.statistics.viewCount,
-        likeCount: videoData.statistics.likeCount,
+        videoId: video.id,
+        title: video.snippet.title,
+        thumbnail: video.snippet.thumbnails.default.url,
+        channel: video.snippet.channelTitle,
+        viewCount: video.statistics.viewCount,
+        likeCount: video.statistics.likeCount,
       },
       movieTrailerPlaylistData: playlistData.map((items: any) => ({
         videoId: items.id.videoId,
@@ -67,7 +67,7 @@ class MovieService {
     return response.data.items;
   };
 
-  private getmovieTrailerPlaylist = async (videoId: string) => {
+  private getMovieTrailerPlaylist = async (videoId: string) => {
     const response = await this.axiosInstance.get('search', {
       params: {
         part: 'snippet',

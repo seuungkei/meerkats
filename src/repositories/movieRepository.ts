@@ -1,21 +1,6 @@
 import { Category, Movie, PrismaClient, Region } from '@prisma/client';
 import MyCustomError from '../utils/customError';
 
-interface movieDataDTO {
-  category?: Category;
-  region?: Region;
-  release_date?: Date;
-  name: string;
-  director: string;
-  actor: string;
-  ratings: string;
-  running_time: string;
-}
-
-interface movieDataWIhtLikeDTO extends movieDataDTO {
-  movieLikeCount: number;
-}
-
 class MovieRepository {
   private prisma: PrismaClient;
 
@@ -23,7 +8,7 @@ class MovieRepository {
     this.prisma = prisma;
   }
 
-  getMovieTraileDetail = async (movieId: number, skip: number, take: number) => {
+  getMovieTrailerDetail = async (movieId: number, skip: number, take: number) => {
     const movie = await this.prisma.movie.findUnique({
       where: {
         id: movieId,
@@ -48,7 +33,7 @@ class MovieRepository {
       },
     });
 
-    const movieTraileComments = await this.getMovieTrailerComments(movieId);
+    const movieTrailerComments = await this.getMovieTrailerComments(movieId);
     const blogLists = await this.getMovieTrailerBlogList(movie?.category.id, skip, take);
 
     const blogLikesAndPopularitySorting = await Promise.all(
@@ -62,11 +47,11 @@ class MovieRepository {
       })
     );
 
-    return { ...movie, movieLikesCount, movieTraileComments, blogLikesAndPopularitySorting };
+    return { ...movie, movieLikesCount, movieTrailerComments, blogLikesAndPopularitySorting };
   };
 
   private getMovieTrailerComments = async (movieId: number) => {
-    const commets = await this.prisma.movieComment.findMany({
+    const comments = await this.prisma.movieComment.findMany({
       where: {
         movie_id: movieId,
       },
@@ -81,7 +66,7 @@ class MovieRepository {
         },
       },
     });
-    return commets;
+    return comments;
   };
 
   private getMovieTrailerBlogList = async (categoryId: number, skip: number, take: number) => {
@@ -102,9 +87,6 @@ class MovieRepository {
       orderBy: [
         {
           weeklyLikeCount: 'desc',
-        },
-        {
-          id: 'desc',
         },
       ],
     });
