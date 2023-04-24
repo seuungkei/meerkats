@@ -23,8 +23,8 @@ class MovieRepository {
     this.prisma = prisma;
   }
 
-  movieTraileDetail = async (movieId: number, userId: number) => {
-    const movieTraileDetailData = await this.prisma.movie.findUnique({
+  getMovieTraileDetail = async (movieId: number, take: number, skip: number) => {
+    const movie = await this.prisma.movie.findUnique({
       where: {
         id: movieId,
       },
@@ -40,15 +40,35 @@ class MovieRepository {
       },
     });
 
-    if (!movieTraileDetailData) throw new MyCustomError('zz');
+    if (!movie) throw new MyCustomError('zz');
 
-    const movieTrailerLikes = await this.prisma.movieLike.count({
+    const movieLikesCount = await this.prisma.movieLike.count({
       where: {
         movie_id: movieId,
       },
     });
 
-    const movieTrailerComments = await this.prisma.movieComment.findMany({
+    const movieTraileComments = await this.getMovieTrailerComments(movieId);
+    const blogLists = await this.getMovieTrailerBlogList(movie?.category.id, take, skip);
+
+    const blogLikesAndPopularitySorting = await Promise.all(
+      blogLists.map(async (blog: any) => {
+        const postLikes = await this.prisma.postLike.count({
+          where: {
+            post_id: blog.id,
+          },
+        });
+        return { ...blog, blogLikes: postLikes };
+      })
+    );
+
+    blogLikesAndPopularitySorting.sort((a, b) => b.weeklyLikeCount - a.weeklyLikeCount);
+
+    return { ...movie, movieLikesCount, movieTraileComments, blogLikesAndPopularitySorting };
+  };
+
+  private getMovieTrailerComments = async (movieId: number) => {
+    const commets = await this.prisma.movieComment.findMany({
       where: {
         movie_id: movieId,
       },
@@ -63,34 +83,28 @@ class MovieRepository {
         },
       },
     });
+    return commets;
+  };
 
-    const blogAboutMovieTrailers = await this.prisma.post.findMany({
+  private getMovieTrailerBlogList = async (categoryId: number, skip: number, take: number) => {
+    return this.prisma.post.findMany({
+      skip: skip,
+      take: take,
       where: {
-        category_id: movieTraileDetailData?.category.id,
+        category_id: categoryId,
       },
       select: {
         id: true,
         user_id: true,
         title: true,
         thumbnail: true,
+        created_at: true,
         weeklyLikeCount: true,
       },
+      orderBy: {
+        weeklyLikeCount: 'desc',
+      },
     });
-
-    const blogLikesAndPopularitySorting = await Promise.all(
-      blogAboutMovieTrailers.map(async (blog) => {
-        const blogLikes = await this.prisma.postLike.count({
-          where: {
-            post_id: blog.id,
-          },
-        });
-        return { ...blog, blogLikes };
-      })
-    );
-
-    blogLikesAndPopularitySorting.sort((a, b) => b.weeklyLikeCount - a.weeklyLikeCount);
-
-    return { ...movieTraileDetailData, movieTrailerLikes, movieTrailerComments, blogLikesAndPopularitySorting };
   };
 }
 

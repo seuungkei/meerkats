@@ -15,8 +15,8 @@ class MovieService {
     this.YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
   }
 
-  public getMovieTrailerDetail = async (movieId: number, userId: number) => {
-    const movieTrailerDetailData = await this.Repository.movieTraileDetail(movieId, userId);
+  public getMovieTrailerDetail = async (movieId: number, take: number, skip: number) => {
+    const movieTrailerDetailData = await this.Repository.getMovieTraileDetail(movieId, take, skip);
 
     const videoId = await this.getMovieTrailerVideoId(movieTrailerDetailData.name);
     const [videoData] = await this.getMovieTrailerData(videoId);
