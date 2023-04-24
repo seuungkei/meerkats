@@ -16,11 +16,11 @@ interface movieDataWIhtLikeDTO extends movieDataDTO {
   movieLikeCount: number;
 }
 
-class movieRepository {
+class MovieRepository {
   private prisma: PrismaClient;
 
-  constructor() {
-    this.prisma = new PrismaClient();
+  constructor(prisma: PrismaClient) {
+    this.prisma = prisma;
   }
 
   movieTraileDetail = async (movieId: number, userId: number) => {
@@ -94,4 +94,4 @@ class movieRepository {
   };
 }
 
-export { movieRepository };
+export { MovieRepository };

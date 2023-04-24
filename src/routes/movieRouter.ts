@@ -1,13 +1,14 @@
 import express from 'express';
 
-import { movieController } from '../controllers/movieController';
-import { movieService } from '../services/movieService';
-import { movieRepository } from '../repositories/movieRepository';
+import { MovieController } from '../controllers/movieController';
+import { MovieService } from '../services/movieService';
+import { MovieRepository } from '../repositories/movieRepository';
+import { PrismaClient } from '@prisma/client';
 
 const router = express.Router();
 
-const getMovieDataController = new movieController(new movieService(new movieRepository()));
+const getMovieDataController = new MovieController(new MovieService(new MovieRepository(new PrismaClient())));
 
-router.get('/:movieId', getMovieDataController.movieTraileDetail);
+router.get('/:movieId', getMovieDataController.getMovieTrailerDetail);
 
 export { router as movieRouter };

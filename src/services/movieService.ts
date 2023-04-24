@@ -1,47 +1,84 @@
-import { movieRepository } from '../repositories/movieRepository';
-import axios from 'axios';
+import { MovieRepository } from '../repositories/movieRepository';
+import axios, { AxiosInstance } from 'axios';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-class movieService {
+class MovieService {
   private readonly YOUTUBE_API_KEY: string | undefined;
-  constructor(private Repository: movieRepository) {
+  constructor(
+    private Repository: MovieRepository,
+    private readonly axiosInstance: AxiosInstance = axios.create({
+      baseURL: 'https://www.googleapis.com/youtube/v3/',
+    })
+  ) {
     this.YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
   }
 
-  public movieTraileDetail = async (movieId: number, userId: number) => {
+  public getMovieTrailerDetail = async (movieId: number, userId: number) => {
     const movieTrailerDetailData = await this.Repository.movieTraileDetail(movieId, userId);
 
-    const getMovieTrailerVideoId = await axios.get(
-      `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${movieTrailerDetailData.name + ' 예고편'}&type=video&key=${this.YOUTUBE_API_KEY}`
-    );
-    const movieTrailerVideoId = getMovieTrailerVideoId.data.items[0].id.videoId;
+    const videoId = await this.getMovieTrailerVideoId(movieTrailerDetailData.name);
+    const [videoData] = await this.getMovieTrailerData(videoId);
+    const playlistData = await this.getmovieTrailerPlaylist(videoId);
 
-    const getMovieTrailerLikesAndViews = await axios.get(`https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${movieTrailerVideoId}&key=${this.YOUTUBE_API_KEY}`);
+    const result = {
+      ...movieTrailerDetailData,
+      movieTrailerMainData: {
+        videoId: videoData.id,
+        title: videoData.snippet.title,
+        thumbnail: videoData.snippet.thumbnails.default.url,
+        channel: videoData.snippet.channelTitle,
+        viewCount: videoData.statistics.viewCount,
+        likeCount: videoData.statistics.likeCount,
+      },
+      movieTrailerPlaylistData: playlistData.map((items: any) => ({
+        videoId: items.id.videoId,
+        title: items.snippet.title,
+        channel: items.snippet.channelTitle,
+        thumbnail: items.snippet.thumbnails.default.url,
+      })),
+    };
 
-    const [movieTrailerMainData] = getMovieTrailerLikesAndViews.data.items.map((items: any) => ({
-      videoId: items.id,
-      title: items.snippet.title,
-      thumbnail: items.snippet.thumbnails.default.url,
-      channel: items.snippet.channelTitle,
-      viewCount: items.statistics.viewCount,
-      likeCount: items.statistics.likeCount,
-    }));
+    return result;
+  };
 
-    const getMovieTrailePlaylist = await axios.get(
-      `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=10&type=video&relatedToVideoId=${movieTrailerVideoId}&key=${this.YOUTUBE_API_KEY}`
-    );
+  private getMovieTrailerVideoId = async (movieName: string) => {
+    const response = await this.axiosInstance.get('search', {
+      params: {
+        part: 'snippet',
+        maxResults: '1',
+        q: `${movieName} trailer`,
+        type: 'video',
+        key: this.YOUTUBE_API_KEY,
+      },
+    });
+    return response.data.items[0].id.videoId;
+  };
 
-    const movieTrailerPlaylistData = getMovieTrailePlaylist.data.items.map((items: any) => ({
-      videoId: items.id.videoId,
-      title: items.snippet.title,
-      channel: items.snippet.channelTitle,
-      thumbnail: items.snippet.thumbnails.default.url,
-    }));
+  private getMovieTrailerData = async (videoId: string) => {
+    const response = await this.axiosInstance.get('videos', {
+      params: {
+        part: 'snippet,statistics',
+        id: videoId,
+        key: this.YOUTUBE_API_KEY,
+      },
+    });
+    return response.data.items;
+  };
 
-    return { ...movieTrailerDetailData, movieTrailerMainData, movieTrailerPlaylistData };
+  private getmovieTrailerPlaylist = async (videoId: string) => {
+    const response = await this.axiosInstance.get('search', {
+      params: {
+        part: 'snippet',
+        maxResults: '10',
+        type: 'video',
+        relatedToVideoId: videoId,
+        key: this.YOUTUBE_API_KEY,
+      },
+    });
+    return response.data.items;
   };
 }
 
-export { movieService };
+export { MovieService };
