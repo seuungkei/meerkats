@@ -23,7 +23,7 @@ class MovieRepository {
     this.prisma = prisma;
   }
 
-  getMovieTraileDetail = async (movieId: number, take: number, skip: number) => {
+  getMovieTraileDetail = async (movieId: number, skip: number, take: number) => {
     const movie = await this.prisma.movie.findUnique({
       where: {
         id: movieId,
@@ -49,7 +49,7 @@ class MovieRepository {
     });
 
     const movieTraileComments = await this.getMovieTrailerComments(movieId);
-    const blogLists = await this.getMovieTrailerBlogList(movie?.category.id, take, skip);
+    const blogLists = await this.getMovieTrailerBlogList(movie?.category.id, skip, take);
 
     const blogLikesAndPopularitySorting = await Promise.all(
       blogLists.map(async (blog: any) => {
@@ -61,8 +61,6 @@ class MovieRepository {
         return { ...blog, blogLikes: postLikes };
       })
     );
-
-    blogLikesAndPopularitySorting.sort((a, b) => b.weeklyLikeCount - a.weeklyLikeCount);
 
     return { ...movie, movieLikesCount, movieTraileComments, blogLikesAndPopularitySorting };
   };
@@ -101,9 +99,14 @@ class MovieRepository {
         created_at: true,
         weeklyLikeCount: true,
       },
-      orderBy: {
-        weeklyLikeCount: 'desc',
-      },
+      orderBy: [
+        {
+          weeklyLikeCount: 'desc',
+        },
+        {
+          id: 'desc',
+        },
+      ],
     });
   };
 }
