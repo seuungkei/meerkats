@@ -1,5 +1,6 @@
-import { Category, Movie, PrismaClient, Region } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import MyCustomError from '../utils/customError';
+import { MovieTrailerDetail, MovieComments, Posts } from '../dto/movie.dto';
 
 class MovieRepository {
   private prisma: PrismaClient;
@@ -8,7 +9,7 @@ class MovieRepository {
     this.prisma = prisma;
   }
 
-  getMovieTrailerDetail = async (movieId: number, skip: number, take: number) => {
+  getMovieTrailerDetail = async (movieId: number, skip: number, take: number): Promise<MovieTrailerDetail> => {
     const movie = await this.prisma.movie.findUnique({
       where: {
         id: movieId,
@@ -27,16 +28,16 @@ class MovieRepository {
 
     if (!movie) throw new MyCustomError('zz');
 
-    const movieLikesCount = await this.prisma.movieLike.count({
+    const movieLikesCount: number = await this.prisma.movieLike.count({
       where: {
         movie_id: movieId,
       },
     });
 
-    const movieTrailerComments = await this.getMovieTrailerComments(movieId);
-    const blogLists = await this.getMovieTrailerBlogList(movie?.category.id, skip, take);
+    const movieTrailerComments: MovieComments[] = await this.getMovieTrailerComments(movieId);
+    const blogLists: Posts[] = await this.getMovieTrailerBlogList(movie?.category.id, skip, take);
 
-    const blogLikesAndPopularitySorting = await Promise.all(
+    const blogLikesAndPopularitySorting: (Posts & { blogLike: number })[] = await Promise.all(
       blogLists.map(async (blog: any) => {
         const postLikes = await this.prisma.postLike.count({
           where: {
@@ -50,7 +51,7 @@ class MovieRepository {
     return { ...movie, movieLikesCount, movieTrailerComments, blogLikesAndPopularitySorting };
   };
 
-  private getMovieTrailerComments = async (movieId: number) => {
+  private getMovieTrailerComments = async (movieId: number): Promise<MovieComments[]> => {
     const comments = await this.prisma.movieComment.findMany({
       where: {
         movie_id: movieId,
@@ -69,7 +70,7 @@ class MovieRepository {
     return comments;
   };
 
-  private getMovieTrailerBlogList = async (categoryId: number, skip: number, take: number) => {
+  private getMovieTrailerBlogList = async (categoryId: number, skip: number, take: number): Promise<Posts[]> => {
     return this.prisma.post.findMany({
       skip: skip,
       take: take,
