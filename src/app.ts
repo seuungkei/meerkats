@@ -4,6 +4,7 @@ import express from 'express';
 import morgan from 'morgan';
 import routes from './routes/index';
 import { errorMiddleware } from './middlewares/error';
+import { SocketServer } from './utils/socket';
 
 dotenv.config();
 
@@ -55,5 +56,8 @@ class Server {
 
 const server = Server.getInstance();
 server.listen();
+
+const socketServer = SocketServer.getInstance();
+socketServer.listen();
 
 export default server;
