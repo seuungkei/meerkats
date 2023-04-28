@@ -24,7 +24,7 @@ class getMovieApi {
     try {
       let dataArray: MovieDTO[] = [];
 
-      for (let i = 1065; i <= 1066; i++) {
+      for (let i = 1; i <= 3; i++) {
         const movieDataList = await axios.get(`http://www.kobis.or.kr/kobisopenapi/webservice/rest/movie/searchMovieList.json?key=${this.movieApiKey}&curPage=${i}`);
         if (!movieDataList) throw new MyCustomError('MOVIE_DATA_ERROR', 400);
 
@@ -81,9 +81,8 @@ class getMovieApi {
         running_time: parseDetailData[index]?.showTm + '분' || '',
         actor: parseDetailData[index]?.actors?.join(',').slice(0, 10) || '',
       }));
-      const a = await this.InsertData.movieData(combinedData);
-      console.log(a);
-      return res.status(200).json({ message: '끝' });
+
+      return combinedData;
     } catch (err) {
       console.error('DATA_ERROR', err);
       return [];
