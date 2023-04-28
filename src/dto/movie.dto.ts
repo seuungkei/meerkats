@@ -1,6 +1,7 @@
 interface MovieInfoDTO {
   movieCd: string;
   movieNm: string;
+  movieNmEn: string;
   prdtYear: string;
   prdtStatNm?: string;
   production_year: string;
@@ -44,16 +45,14 @@ interface MovieDetailDTO {
 }
 
 interface combinedDTO {
-  movie_code: string;
   name: string;
-  production_year: string;
+  english_name: string;
   release_data: string;
   category: string;
   region: string;
   director: string[];
   running_time: string;
   actor: string[] | Person[];
-  ratings: string;
 }
 
 export { MovieInfoDTO, MovieDTO, Person, MovieDetailInfoDTO, MovieDetailDTO, combinedDTO };

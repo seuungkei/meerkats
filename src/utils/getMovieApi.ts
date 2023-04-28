@@ -9,7 +9,7 @@ class getMovieApi {
   private readonly movieApiKey: string | undefined;
   private readonly movieApiSecondKey: string | undefined;
   private readonly REGEX =
-    /{"movieCd":"\d+\w*"|\s*"movieNm":"[^"]*"|"prdtYear":"\d+"|"openDt":"\d+"|"genreAlt":"[^"]*"|"repNationNm":"[^"]*"|"directors":\[|(?<="peopleNm":)"\W*"(?=})|(?=],)]|(?<=])}/g;
+    /{"movieCd":"\d+\w*"|\s*"movieNm":"[^"]*"|"movieNmEn":"[^"]*"|"openDt":"\d+"|"genreAlt":"[^"]*"|"repNationNm":"[^"]*"|"directors":\[|(?<="peopleNm":)"\W*"(?=})|(?=],)]|(?<=])}/g;
   private readonly DETAIL_REGEX = /(?<=ult":){|"showTm":"\w*"|"actors":\[|](?=,"showTy)|(?<=leNm":)"\W*"|"watchGradeNm":"[^"]*"|(?<=회")}/g;
 
   constructor() {
@@ -21,7 +21,7 @@ class getMovieApi {
     try {
       let dataArray: MovieDTO[] = [];
 
-      for (let i = 1000; i <= 1010; i++) {
+      for (let i = 1065; i <= 1068; i++) {
         const movieDataList = await axios.get(`http://www.kobis.or.kr/kobisopenapi/webservice/rest/movie/searchMovieList.json?key=${this.movieApiKey}&curPage=${i}`);
         if (!movieDataList) throw new MyCustomError('MOVIE_DATA_ERROR', 400);
 
@@ -67,18 +67,17 @@ class getMovieApi {
         .replaceAll(',"]', ']');
 
       const parseDetailData: MovieDetailInfoDTO[] = JSON.parse(`[${replaceDetailDataList}]`);
+      console.log(parseDetailData);
 
       const combinedData: combinedDTO[] = categoryFilter.map((movie, index) => ({
-        movie_code: movie.movieCd || '',
         name: movie.movieNm || '',
-        production_year: movie.prdtYear || '',
+        english_name: movie.movieNmEn || '',
         release_data: movie.openDt || '',
         category: movie.genreAlt || '',
         region: movie.repNationNm || '',
         director: movie.directors || [],
-        running_time: parseDetailData[index]?.showTm || '',
+        running_time: parseDetailData[index]?.showTm + '분' || '',
         actor: parseDetailData[index]?.actors || [],
-        ratings: parseDetailData[index]?.watchGradeNm || '',
       }));
       return combinedData;
     } catch (err) {
