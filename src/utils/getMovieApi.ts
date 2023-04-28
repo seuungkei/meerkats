@@ -18,11 +18,11 @@ class getMovieApi {
     this.movieApiSecondKey = process.env.MOVIE_API_SECOND_KEY;
   }
 
-  public parseMovieDataList = async (): Promise<combinedDTO[]> => {
+  public parseMovieDataList = async () => {
     try {
       let dataArray: MovieDTO[] = [];
 
-      for (let i = 1065; i <= 1068; i++) {
+      for (let i = 1065; i <= 1066; i++) {
         const movieDataList = await axios.get(`http://www.kobis.or.kr/kobisopenapi/webservice/rest/movie/searchMovieList.json?key=${this.movieApiKey}&curPage=${i}`);
         if (!movieDataList) throw new MyCustomError('MOVIE_DATA_ERROR', 400);
 
@@ -69,18 +69,19 @@ class getMovieApi {
 
       const parseDetailData: MovieDetailInfoDTO[] = JSON.parse(`[${replaceDetailDataList}]`);
 
-      const combinedData: combinedDTO[] = categoryFilter.map((movie, index) => ({
+      const combinedData = categoryFilter.map((movie, index) => ({
         name: movie.movieNm || '',
         english_name: movie.movieNmEn || '',
         release_data: movie.openDt || '',
-        category: movie.genreAlt || '',
-        region: movie.repNationNm || '',
+        // category: movie.genreAlt || '',
+        // region: movie.repNationNm || '',
         director: movie.directors || [],
         running_time: parseDetailData[index]?.showTm + '분' || '',
         actor: parseDetailData[index]?.actors?.slice(0, 10) || [],
       }));
       const result = await this.InsertData.movieData(combinedData);
-      return combinedData;
+      console.log(result);
+      return result;
     } catch (err) {
       console.error('DATA_ERROR', err);
       return [];

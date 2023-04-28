@@ -8,7 +8,12 @@ class InsertData {
     this.prisma = prisma;
   }
 
-  movieData = async (movieData: combinedDTO[]) => {};
+  movieData = async (data: any) => {
+    await this.prisma.$transaction([
+      this.prisma.movie.createMany({
+        data,
+      }),
+    ]);
+  };
 }
-
 export { InsertData };
