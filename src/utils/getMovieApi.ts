@@ -4,6 +4,8 @@ import MyCustomError from './customError';
 import { MovieInfoDTO, MovieDTO, MovieDetailInfoDTO, MovieDetailDTO, combinedDTO } from '../dto/movie.dto';
 import { InsertData } from './insertDatabase';
 
+import { Request, Response } from 'express';
+
 dotenv.config();
 
 class getMovieApi {
@@ -18,7 +20,7 @@ class getMovieApi {
     this.movieApiSecondKey = process.env.MOVIE_API_SECOND_KEY;
   }
 
-  public parseMovieDataList = async () => {
+  public parseMovieDataList = async (req: Request, res: Response) => {
     try {
       let dataArray: MovieDTO[] = [];
 
@@ -75,13 +77,12 @@ class getMovieApi {
         release_data: movie.openDt || '',
         // category: movie.genreAlt || '',
         // region: movie.repNationNm || '',
-        director: movie.directors || [],
+        director: movie.directors.join(',') || '',
         running_time: parseDetailData[index]?.showTm + '분' || '',
-        actor: parseDetailData[index]?.actors?.slice(0, 10) || [],
+        actor: parseDetailData[index]?.actors?.join(',').slice(0, 10) || '',
       }));
-      const result = await this.InsertData.movieData(combinedData);
-      console.log(result);
-      return result;
+      await this.InsertData.movieData(combinedData);
+      return res.status(200).json({ message: '끝' });
     } catch (err) {
       console.error('DATA_ERROR', err);
       return [];
