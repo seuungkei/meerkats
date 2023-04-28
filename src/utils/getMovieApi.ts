@@ -81,7 +81,8 @@ class getMovieApi {
         running_time: parseDetailData[index]?.showTm + '분' || '',
         actor: parseDetailData[index]?.actors?.join(',').slice(0, 10) || '',
       }));
-      await this.InsertData.movieData(combinedData);
+      const a = await this.InsertData.movieData(combinedData);
+      console.log(a);
       return res.status(200).json({ message: '끝' });
     } catch (err) {
       console.error('DATA_ERROR', err);
