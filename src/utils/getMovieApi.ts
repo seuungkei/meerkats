@@ -2,6 +2,7 @@ import axios from 'axios';
 import dotenv from 'dotenv';
 import MyCustomError from './customError';
 import { MovieInfoDTO, MovieDTO, MovieDetailInfoDTO, MovieDetailDTO, combinedDTO } from '../dto/movie.dto';
+import { InsertData } from './insertDatabase';
 
 dotenv.config();
 
@@ -12,7 +13,7 @@ class getMovieApi {
     /{"movieCd":"\d+\w*"|\s*"movieNm":"[^"]*"|"movieNmEn":"[^"]*"|"openDt":"\d+"|"genreAlt":"[^"]*"|"repNationNm":"[^"]*"|"directors":\[|(?<="peopleNm":)"\W*"(?=})|(?=],)]|(?<=])}/g;
   private readonly DETAIL_REGEX = /(?<=ult":){|"showTm":"\w*"|"actors":\[|](?=,"showTy)|(?<=leNm":)"\W*"|"watchGradeNm":"[^"]*"|(?<=회")}/g;
 
-  constructor() {
+  constructor(private InsertData: InsertData) {
     this.movieApiKey = process.env.MOVIE_API_KEY;
     this.movieApiSecondKey = process.env.MOVIE_API_SECOND_KEY;
   }
@@ -67,7 +68,6 @@ class getMovieApi {
         .replaceAll(',"]', ']');
 
       const parseDetailData: MovieDetailInfoDTO[] = JSON.parse(`[${replaceDetailDataList}]`);
-      console.log(parseDetailData);
 
       const combinedData: combinedDTO[] = categoryFilter.map((movie, index) => ({
         name: movie.movieNm || '',
@@ -77,8 +77,9 @@ class getMovieApi {
         region: movie.repNationNm || '',
         director: movie.directors || [],
         running_time: parseDetailData[index]?.showTm + '분' || '',
-        actor: parseDetailData[index]?.actors || [],
+        actor: parseDetailData[index]?.actors?.slice(0, 10) || [],
       }));
+      const result = await this.InsertData.movieData(combinedData);
       return combinedData;
     } catch (err) {
       console.error('DATA_ERROR', err);
