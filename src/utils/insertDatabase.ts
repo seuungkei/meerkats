@@ -9,7 +9,9 @@ class InsertData {
   }
 
   movieData = async (movieData: any) => {
-    return await this.prisma.$transaction([]);
+    return await this.prisma.movie.createMany({
+      data: movieData,
+    });
   };
 }
 export { InsertData };

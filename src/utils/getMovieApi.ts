@@ -13,7 +13,7 @@ class getMovieApi {
   private readonly movieApiSecondKey: string | undefined;
   private readonly REGEX =
     /{"movieCd":"\d+\w*"|\s*"movieNm":"[^"]*"|"movieNmEn":"[^"]*"|"openDt":"\d+"|"genreAlt":"[^"]*"|"repNationNm":"[^"]*"|"directors":\[|(?<="peopleNm":)"\W*"(?=})|(?=],)]|(?<=])}/g;
-  private readonly DETAIL_REGEX = /(?<=ult":){|"showTm":"\w*"|"actors":\[|](?=,"showTy)|(?<=leNm":)"\W*"|"watchGradeNm":"[^"]*"|(?<=회")}/g;
+  private readonly DETAIL_REGEX = /(?<=ult":){|"showTm":"\w*"|"actors":\[|](?=,"showTy)|(?<=leNm":)"\W*"|(?<=흥위원회")}/g;
 
   constructor(private InsertData: InsertData) {
     this.movieApiKey = process.env.MOVIE_API_KEY;
@@ -24,9 +24,8 @@ class getMovieApi {
     try {
       let dataArray: MovieDTO[] = [];
 
-      for (let i = 1; i <= 3; i++) {
+      for (let i = 1001; i <= 0; i++) {
         const movieDataList = await axios.get(`http://www.kobis.or.kr/kobisopenapi/webservice/rest/movie/searchMovieList.json?key=${this.movieApiKey}&curPage=${i}`);
-        if (!movieDataList) throw new MyCustomError('MOVIE_DATA_ERROR', 400);
 
         dataArray.push(movieDataList.data);
       }
@@ -42,7 +41,6 @@ class getMovieApi {
       const regexMovieDataList = JSON.stringify(prdtStatNmn).match(this.REGEX);
       const replaceDataList = regexMovieDataList?.join().replaceAll(',}', '}').replaceAll('[,', '[').replaceAll(',]', ']');
       const parseMovieData: MovieInfoDTO[] = JSON.parse(`[${replaceDataList}]`);
-
       const categoryFilter = parseMovieData.filter((movie) => !movie.genreAlt.includes('성인물'));
 
       const movieCodeArray: string[] = categoryFilter.map((el) => el.movieCd);
@@ -72,17 +70,18 @@ class getMovieApi {
       const parseDetailData: MovieDetailInfoDTO[] = JSON.parse(`[${replaceDetailDataList}]`);
 
       const combinedData = categoryFilter.map((movie, index) => ({
-        name: movie.movieNm || '',
-        english_name: movie.movieNmEn || '',
-        release_data: movie.openDt || '',
-        // category: movie.genreAlt || '',
-        // region: movie.repNationNm || '',
-        director: movie.directors.join(',') || '',
-        running_time: parseDetailData[index]?.showTm + '분' || '',
-        actor: parseDetailData[index]?.actors?.join(',').slice(0, 10) || '',
+        name: movie.movieNm || null,
+        english_name: movie.movieNmEn || null,
+        release_date: movie.openDt ? new Date(movie.openDt.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) : null,
+        // category: movie.genreAlt || null,
+        // region: movie.repNationNm || null,
+        director: movie.directors.join(',') || null,
+        running_time: parseDetailData[index]?.showTm + '분' || null,
+        actor: parseDetailData[index]?.actors?.join(',').slice(0, 10) || null,
       }));
-
-      return combinedData;
+      console.log(combinedData);
+      // await this.InsertData.movieData(combinedData);
+      return res.status(200).json({ message: '끝' });
     } catch (err) {
       console.error('DATA_ERROR', err);
       return [];
