@@ -1,5 +1,6 @@
 import { crawlerRepository } from "../repositories/crawlerRepository"
 import { crawlerUtil } from "../utils/crawlerUtil";
+import { crawler } from "../utils/searchDaumMovie";
 
 class crawlerService {
   constructor(private Repository: crawlerRepository, private Util: crawlerUtil) {
@@ -13,7 +14,7 @@ class crawlerService {
     const movieNameArr = await this.getMovieName(take, skip);
 
     const result = movieNameArr.map(async(data) => {
-      return await this.Util.crawler(data.name);
+      return await crawler(data.name);
     })
 
     return result

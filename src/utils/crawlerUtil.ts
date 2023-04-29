@@ -2,79 +2,82 @@ import { Builder, Capabilities, By, ThenableWebDriver } from 'selenium-webdriver
 import chrome from 'selenium-webdriver/chrome';
 import { Request, Response } from 'express';
 
-// const sleep = (ms: number) => {
-//   return new Promise((resolve) =>
-//     setTimeout(() => {
-//       resolve(ms);
-//     }, ms),
-//   );
-// };
+const sleep = (ms: number) => {
+  return new Promise((resolve) =>
+    setTimeout(() => {
+      resolve(ms);
+    }, ms),
+  );
+};
+
+const goto = (driver: any, url: string) => {
+    driver.navigate().to(url);
+  }
 
 class crawlerUtil {
-  private capabilities: Capabilities;
-  private options: chrome.Options;
-  private driver: ThenableWebDriver;
   private result: {titleEng?: string; ratings?: string, synopsis?: string, thumb?: string} = {};
   private REGEXFORRATINGS: RegExp;
   private REGEXFORTHUMB: RegExp;
   constructor() {
-    this.capabilities = Capabilities.chrome();
-    this.options = new chrome.Options();
-    this.options.addArguments('--headless');
-    this.capabilities.set('chromeOptions', {
-      'args': ['--no-sandbox', '--disable-dev-shm-usage', '--headless'],
-    });
-    this.driver = new Builder().withCapabilities(this.capabilities).build();
     this.REGEXFORRATINGS = /(?<=\|\s)\d{0,2}\W{2,4}(?:관람가)|청소년관람불가/g;
     this.REGEXFORTHUMB = /(?<=\(").*(?=")/g;
   }
 
-  sleep = (ms: number) => {
-    return new Promise((resolve) =>
-      setTimeout(() => {
-        resolve(ms);
-      }, ms),
-    );
-  };
+  // sleep = (ms: number) => {
+  //   return new Promise((resolve) =>
+  //     setTimeout(() => {
+  //       resolve(ms);
+  //     }, ms),
+  //   );
+  // };
 
-  goto(url: string) {
-    this.driver.navigate().to(url);
-  }
+  // goto(driver: any, url: string) {
+  //   driver.navigate().to(url);
+  // }
 
-  movieRatingCrawler = async(movieName: string): Promise<void> => {
+  movieRatingCrawler = async(driver: any, movieName: string): Promise<void> => {
     const movieInfoUrl = `https://search.daum.net/search?nil_suggest=btn&w=tot&DA=SBC&q=영화+${movieName}`
 
-    this.goto(movieInfoUrl);
-    this.result.ratings = (await this.driver.findElement(By.css('.wid_n > .coll_cont > .mg_cont > .info_movie > .wrap_cont > dl:nth-child(2) > dd:nth-child(2)')).getText()).trim().match(this.REGEXFORRATINGS)?.toString();
+    goto(driver, movieInfoUrl);
+    await sleep(2000);
+    this.result.ratings = (await driver.findElement(By.css('.wid_n > .coll_cont > .mg_cont > .info_movie > .wrap_cont > dl:nth-child(2) > dd:nth-child(2)')).getText()).trim().match(this.REGEXFORRATINGS)?.toString();
+    console.log(`movieRatingCrawler , ${movieName}`,this.result)
   }
 
-  moviesynopsisCrawler = async(): Promise<void>  => {
-    const synopsisUrl = (await this.driver.findElement(By.css('.wid_n > .coll_cont > .mg_cont > .info_movie > .wrap_cont > dl:nth-child(5) > .cont > .f_more')).getAttribute('href'));
+  moviesynopsisCrawler = async(driver: any): Promise<void>  => {
+    const synopsisUrl = (await driver.findElement(By.css('.wid_n > .coll_cont > .mg_cont > .info_movie > .wrap_cont > dl:nth-child(5) > .cont > .f_more')).getAttribute('href'));
 
-    this.goto(synopsisUrl);
-    await this.sleep(2000);
+    goto(driver, synopsisUrl);
+    await sleep(2000);
 
-    this.result.synopsis = (await this.driver.findElement(By.css('.desc_cont')).getAttribute('innerHTML'));
+    this.result.synopsis = (await driver.findElement(By.css('.desc_cont')).getAttribute('innerHTML'));
   }
 
-  movieThumbUrlCrawler = async(): Promise<void>  => {
+  movieThumbUrlCrawler = async(driver: any): Promise<void>  => {
     // const thumbUrl = (await this.driver.findElement(By.css('.wid_n > .coll_cont > .mg_cont > .info_movie > .wrap_thumb > .thumb')).getAttribute('href'));
 
     // this.goto(thumbUrl);
-    await this.sleep(2000);
+    await sleep(2000);
 
-    this.result.thumb = (await this.driver.findElement(By.css('span.bg_img')).getAttribute('style')).match(this.REGEXFORTHUMB)?.toString();
+    this.result.thumb = (await driver.findElement(By.css('span.bg_img')).getAttribute('style')).match(this.REGEXFORTHUMB)?.toString();
   }
 
   crawler = async(movieName: string) => {
+    const capabilities = Capabilities.chrome();
+    const options = new chrome.Options();
+    options.addArguments('--headless');
+    capabilities.set('chromeOptions', {
+      'args': ['--no-sandbox', '--disable-dev-shm-usage', '--headless'],
+    });
+    const driver = await new Builder().withCapabilities(capabilities).build();
     console.log(movieName)
-    await this.movieRatingCrawler(movieName);
-    await this.moviesynopsisCrawler();
-    await this.movieThumbUrlCrawler();
+    await this.movieRatingCrawler(driver, movieName);
+    await this.moviesynopsisCrawler(driver);
+    await this.movieThumbUrlCrawler(driver);
     console.log(this.result);
 
-    await this.sleep(4000);
-    await this.driver.quit();
+    await sleep(4000);
+    await driver.quit();
 
     return this.result;
   }
