@@ -1,5 +1,5 @@
 import * as express from 'express';
-import { crawling } from './searchDaum';
+import { crawling } from './crawlerRouter';
 
 const router = express.Router();
 

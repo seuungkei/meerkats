@@ -5,11 +5,11 @@ class crawlerController {
   constructor (private Service: crawlerService) {
   }
 
-  getMovieName = async(req: Request<{}, {}, {}, { take: string, skip: string }>, res: Response) => {
-    const { take, skip } = req.query;
-    if (!take || !skip) throw new Error("take & skip must be defined");
+  bulkUpdateMovieData = async(req: Request<{}, {}, {}, { MAXskip: string }>, res: Response) => {
+    const { MAXskip } = req.query;
+    if (!MAXskip) throw new Error("MAXskip must be defined");
 
-    const data = await this.Service.crawler(Number(take), Number(skip));
+    const data = await this.Service.bulkUpdateMovieData(Number(MAXskip));
     res.status(200).json({ data: data });
   }
 }

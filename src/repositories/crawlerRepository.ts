@@ -20,6 +20,33 @@ class crawlerRepository {
     })
     return getMovieName;
   }
+
+  async searchRatingId(rating: string) {
+    return await this.prisma.rating.findFirst({
+      where: {
+        name : rating
+      },
+      select: {
+        id: true
+      }
+    })
+  }
+
+  async updateMovieData(movieId: number, ratingId: number, posterImg: string, summary: string) {
+    await this.prisma.$transaction([
+      this.prisma.movie.updateMany({
+        where: {
+          id: movieId,
+        },
+        data: {
+          rating_id: ratingId,
+          poster_img: posterImg,
+          summary: summary,
+        },
+      }),
+    ])
+    return `${movieId} update SUCCESS!!!`
+  }
 }
 
 export {

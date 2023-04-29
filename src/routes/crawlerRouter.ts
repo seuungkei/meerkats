@@ -1,4 +1,3 @@
-import { PrismaClient } from '@prisma/client';
 import express from 'express';
 
 import { crawlerUtil } from '../utils/crawlerUtil';
@@ -8,10 +7,8 @@ import { crawlerRepository } from '../repositories/crawlerRepository';
 
 const router = express.Router();
 
-// const getCrawlerUtil = new crawlerUtil();
 const getCrawlerController = new crawlerController(new crawlerService(new crawlerRepository(), new crawlerUtil()));
 
-// router.get('/api', getCrawlerUtil.crawler);
-router.get('/test', getCrawlerController.getMovieName);
+router.get('/bulkUpdateMovieData', getCrawlerController.bulkUpdateMovieData);
 
 export { router as crawling };
