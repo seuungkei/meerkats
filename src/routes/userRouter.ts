@@ -5,7 +5,9 @@ import { userRepository } from '../repositories/userRepository';
 
 const router = express.Router();
 
-const getUserDataController = new userController(new userService(new userRepository()));
+const getUserRepository = new userRepository();
+
+const getUserDataController = new userController(new userService(getUserRepository));
 
 router.post('/kakao-login', getUserDataController.kakaoLogin);
 router.post('/signup', getUserDataController.signUp);
@@ -16,4 +18,5 @@ router.post('/signin', getUserDataController.signIn);
 
 export {
   router as userRouter,
+  getUserRepository,
 }

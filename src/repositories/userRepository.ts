@@ -39,6 +39,19 @@ class userRepository {
     return createUser.id;
   };
 
+  async getUserById(userId: number) {
+    const result = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    return result;
+  };
+
   exists = async (args: Prisma.UserCountArgs) => {
     const count = await this.prisma.user.count(args);
     return Boolean(count);
