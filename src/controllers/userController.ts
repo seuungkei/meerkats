@@ -1,13 +1,23 @@
-import { Response, Request } from 'express';
-import MyCustomError from '../utils/customError';
-import { catchAsync } from '../middlewares/error';
+import { Request, Response } from 'express';
 import { userService } from '../services/userService';
+import { catchAsync } from '../middlewares/error';
+import MyCustomError from '../utils/customError';
 import { userDTO } from '../dto/user.dto';
 
 let certificationNumber: string;
 
 class userController {
-  constructor(private Service: userService) {}
+  constructor(private Service: userService) {
+  }
+
+  public kakaoLogin = catchAsync(async (req: Request, res: Response) => {
+    const kakaoToken: string | undefined = req.headers.authorization;
+  
+    if (!kakaoToken) throw new MyCustomError("kakaoToken must be defined", 400);
+  
+    const { accessToken, userNickname, status } = await this.Service.kakaoLogin(kakaoToken);
+    return res.status(status).json({ accessToken, userNickname });
+  });
 
   public checkEmail = catchAsync(async (req: Request, res: Response) => {
     const email: string = req.body.email;
@@ -68,4 +78,6 @@ class userController {
   });
 }
 
-export { userController };
+export {
+  userController,
+}

@@ -1,6 +1,6 @@
 import { prisma } from '../repositories/prisma';
 import { Prisma, PrismaClient } from '@prisma/client';
-import { userInfoDTO, userDTO } from '../dto/user.dto';
+import { IgetSocialUser, userInfoDTO, userDTO } from "../dto/user.dto";
 
 class userRepository {
   private readonly prisma: PrismaClient;
@@ -8,6 +8,36 @@ class userRepository {
   constructor() {
     this.prisma = prisma;
   }
+
+  async getSocialUser(socialId: string): Promise<IgetSocialUser | null> {
+    const getSocialUser: IgetSocialUser | null = await this.prisma.user.findUnique({
+      where: {
+        social_id: socialId,
+      },
+      select: {
+        id: true,
+        nickname: true,
+        email: true,
+        social_id: true,
+        social_type_id: true,
+      },
+    })
+
+    return getSocialUser;
+  };
+
+  async createUser(nickname: string, email: string, socialId: string, socialTypeId: number): Promise<number> {
+    const createUser = await this.prisma.user.create({
+      data : {
+        nickname: nickname,
+        email: email,
+        social_id: socialId,
+        social_type_id: socialTypeId
+      }
+    })
+
+    return createUser.id;
+  };
 
   exists = async (args: Prisma.UserCountArgs) => {
     const count = await this.prisma.user.count(args);
@@ -48,4 +78,7 @@ class userRepository {
   };
 }
 
-export { userRepository, userInfoDTO };
+export {
+  userRepository,
+  userInfoDTO,
+}
