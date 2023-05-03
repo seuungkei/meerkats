@@ -15,6 +15,7 @@ router.post('/email-confirm', getUserDataController.confirmEmail);
 router.post('/email-check', getUserDataController.checkEmail);
 router.post('/email-send', getUserDataController.sendEmail);
 router.post('/signin', getUserDataController.signIn);
+router.post('/google-login', getUserDataController.googleLogin);
 
 export {
   router as userRouter,

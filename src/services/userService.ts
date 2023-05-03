@@ -155,6 +155,30 @@ class userService {
 
     return { accessToken: jwtToken };
   };
+
+  public async googleLogin  (kakaoToken: string | undefined): Promise<{accessToken: string; userNickname: string | null; status: number;}> {
+    if(!this.JWT_SECRET_KEY) throw new MyCustomError('JWT_SECRET must be defined', 500);
+
+    const {nickname, email, socialId} = await this._getGoogleUserData(kakaoToken);
+    const user = await this.Repository.getSocialUser(socialId);
+
+    return user? await this._ifExistUser(user, this.JWT_SECRET_KEY) : await this._ifNotExistUser(nickname, email, socialId, this.JWT_SECRET_KEY, this.SOCIAL_TYPES.google);
+  };
+
+  private async _getGoogleUserData (googleToken: string | undefined): Promise<{nickname: string; email: string; socialId: string;}> {
+    const { data } = await axios.get("https://kapi.kakao.com/v2/user/me", {
+      headers: {
+        authorization: `Bearer ${googleToken}`,
+        "Content-type": "application/x-www-form-urlencoded;charset=utf-8",
+      },
+    });
+  
+    const nickname: string = data.properties.nickname;
+    const email: string = data.kakao_account.email;
+    const socialId: string = data.id.toString();
+
+    return {nickname, email, socialId};
+  }
 }
 
 export {

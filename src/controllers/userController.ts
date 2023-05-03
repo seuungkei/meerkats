@@ -76,6 +76,15 @@ class userController {
 
     return res.status(201).json(jwtToken);
   });
+
+  public googleLogin = catchAsync(async (req: Request, res: Response) => {
+    const googleToken: string | undefined = req.headers.authorization;
+  
+    if (!googleToken) throw new MyCustomError("kakaoToken must be defined", 400);
+  
+    const { accessToken, userNickname, status } = await this.Service.kakaoLogin(googleToken);
+    return res.status(status).json({ accessToken, userNickname });
+  });
 }
 
 export {
