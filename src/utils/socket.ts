@@ -45,7 +45,7 @@ class SocketServer {
     this.io.on('connection', (socket: Socket) => {
       console.log(`Socket ${socket.id} connected`);
 
-      socket.on('join_room', (roomId) => {
+      socket.on('join_room', (roomId: string) => {
         socket.join(roomId);
 
         this.io.to(roomId).emit('count', this.countRoom(roomId));
@@ -58,7 +58,7 @@ class SocketServer {
         console.log(data);
       });
 
-      socket.on('leave', (roomId) => {
+      socket.on('leave', (roomId: string) => {
         socket.leave(roomId);
 
         socket.to(roomId).emit('count', this.countRoom(roomId));
