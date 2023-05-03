@@ -8,7 +8,7 @@ dotenv.config();
 
 const WEBSOCKET_CORS = {
   origin: '*',
-  path: '/socket.io',
+  path: '/chatting/',
   methods: ['GET', 'POST'],
 };
 
