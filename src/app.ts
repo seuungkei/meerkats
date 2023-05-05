@@ -4,6 +4,9 @@ import express from 'express';
 import morgan from 'morgan';
 import routes from './routes/index';
 import { errorMiddleware } from './middlewares/error';
+import { hourlyUpdate } from './utils/updateWeeklyLikeCount';
+
+hourlyUpdate;
 
 dotenv.config();
 
