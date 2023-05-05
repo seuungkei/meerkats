@@ -11,7 +11,19 @@ class SearchRepository {
   movieSearch = async (movieTitle: string) => {
     return await this.prisma.movie.findMany({
       where: {
-        name: movieTitle,
+        name,
+        english_name: {
+          contains: movieTitle,
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+        poster_img: true,
+        release_date: true,
+      },
+      orderBy: {
+        release_date: 'desc',
       },
     });
   };
