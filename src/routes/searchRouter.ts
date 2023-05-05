@@ -8,6 +8,6 @@ const router = express.Router();
 const getSearchDataController = new SearchController(new SearchService(new SearchRepository()));
 
 router.get('/movie', getSearchDataController.movieSearch);
-// router.get('/blog', getSearchDataController.blogSearch);
+router.get('/blog', getSearchDataController.blogSearch);
 
 export { router as searchRouter };

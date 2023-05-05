@@ -11,9 +11,9 @@ class SearchRepository {
   movieSearch = async (movieTitle: string) => {
     return await this.prisma.movie.findMany({
       where: {
-        name,
-        english_name: {
-          contains: movieTitle,
+        OR: [{ name: { contains: movieTitle } }, { english_name: { contains: movieTitle } }],
+        NOT: {
+          poster_img: null,
         },
       },
       select: {
@@ -23,7 +23,31 @@ class SearchRepository {
         release_date: true,
       },
       orderBy: {
-        release_date: 'desc',
+        name: 'asc',
+      },
+    });
+  };
+
+  blogSearch = async (blogTitle: string) => {
+    return await this.prisma.post.findMany({
+      where: {
+        title: {
+          contains: blogTitle,
+        },
+      },
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        created_at: true,
+        category_id: true,
+        spoiler_info_id: true,
+        user: {
+          select: {
+            id: true,
+            nickname: true,
+          },
+        },
       },
     });
   };

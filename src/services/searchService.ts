@@ -7,6 +7,10 @@ class SearchService {
   movieSearch = async (movieTitle: string) => {
     return await this.Repository.movieSearch(movieTitle);
   };
+
+  blogSearch = async (blogTitle: string) => {
+    return await this.Repository.blogSearch(blogTitle);
+  };
 }
 
 export { SearchService };
