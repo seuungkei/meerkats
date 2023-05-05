@@ -11,9 +11,7 @@ class SearchRepository {
   movieSearch = async (movieTitle: string) => {
     return await this.prisma.movie.findMany({
       where: {
-        body: {
-          search: movieTitle,
-        },
+        name: movieTitle,
       },
     });
   };
