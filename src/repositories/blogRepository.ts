@@ -34,7 +34,12 @@ class blogRepository {
         title: true,
         content: true,
         created_at: true,
-        category_id: true,
+        category : {
+          select: {
+            id: true,
+            name: true
+          }
+        },
         spoiler_info_id: true,
         user: {
           select: {

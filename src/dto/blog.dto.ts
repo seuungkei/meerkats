@@ -12,10 +12,14 @@ interface IpostDetails {
   title: string,
   content: string,
   created_at: Date,
-  category_id: number,
+  category : {
+    id: number,
+    name: string
+  },
   spoiler_info_id: number,
   user: {
-      nickname: string | null
+    id: number,
+    nickname: string | null
   },
   likeCount?: number,
   isLikedByThisUser?: boolean,
