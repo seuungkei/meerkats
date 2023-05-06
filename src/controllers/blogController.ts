@@ -146,6 +146,11 @@ class blogController {
     await this.Service.deleteComment(userId, Number(postCommentId));
     return res.status(200).json({ message: "deleteComment SUCCESS"});
   });
+
+  public getCategoryList = catchAsync(async(req: Request, res: Response) => {
+    const categoryList = await this.Service.getCategoryList();
+    return res.status(200).json({ data: categoryList});
+  })
 }
 
 export {

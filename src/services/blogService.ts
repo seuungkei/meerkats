@@ -114,6 +114,10 @@ class blogService {
     if (!isCommentByThisUser) throw new MyCustomError("This comment was not written by this user, FAILED", 403);
     return this.Repository.deleteComment(postCommentId);
   }
+
+  public async getCategoryList () {
+    return this.Repository.category();
+  }
 }
 
 export {

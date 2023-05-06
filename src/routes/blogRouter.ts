@@ -21,6 +21,7 @@ router.post("/postScrap/:postId", loginRequired, getBlogDataController.createOrD
 router.post("/postComment/:postId", loginRequired, getBlogDataController.createComment);
 router.patch("/postComment/:postCommentId", loginRequired, getBlogDataController.updateComment);
 router.delete("/postComment/:postCommentId", loginRequired, getBlogDataController.deleteComment);
+router.get("/categoryList", getBlogDataController.getCategoryList);
 
 export {
   router as blogRouter,
