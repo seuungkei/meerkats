@@ -49,14 +49,14 @@ class userService {
   private async _ifExistUser(user: IgetSocialUser, JWT_SECRET: string): Promise<{accessToken: string; userNickname: string | null; status: number;}> {
     const userId: number = user.id;
     const userNickname: string | null = user.nickname;
-    const jsonwebtoken: string = jwt.sign({ id: userId }, JWT_SECRET);
+    const jsonwebtoken: string = jwt.sign({ id: userId, nickname: userNickname}, JWT_SECRET);
     
     return { accessToken: jsonwebtoken, userNickname: userNickname, status: 200 };
   }
 
   private async _ifNotExistUser(nickname: string, email: string, socialId: string, JWT_SECRET: string, socialTypeId: number): Promise<{accessToken: string; userNickname: string; status: number;}> {
     const userId = await this.Repository.createUser(nickname, email, socialId, socialTypeId);
-    const jsonwebtoken = jwt.sign({ id: userId }, JWT_SECRET);
+    const jsonwebtoken = jwt.sign({ id: userId, nickname: nickname }, JWT_SECRET);
 
     return { accessToken: jsonwebtoken, userNickname: nickname, status: 201 };
   }

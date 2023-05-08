@@ -8,7 +8,7 @@ import { searchRouter } from './searchRouter';
 const router = express.Router();
 
 router.use("/blog", blogRouter);
-router.use('/users', userRouter)
+router.use('/users', userRouter);
 router.use('/movie', movieRouter);
 router.use('/search', searchRouter);
 
