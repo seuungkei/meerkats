@@ -1,3 +1,34 @@
+interface LikeWithMainMovie {
+  likes: number;
+  id: number;
+  name: string;
+  release_date: Date | null;
+  poster_img: string | null;
+}
+
+interface MainMovie {
+  id: number;
+  name: string;
+  release_date: Date | null;
+  poster_img: string | null;
+}
+
+interface BestMovie {
+  id: number;
+  name: string;
+  poster_img: string | null;
+  _count: {
+    movie_likes: number;
+  };
+}
+
+interface AllMainMovie {
+  latestMovie: MainMovie[];
+  koreanMovieWithLikes: LikeWithMainMovie[];
+  foreignMovieWithLikes: LikeWithMainMovie[];
+  bestMovie: BestMovie[];
+}
+
 interface VideoSnippet {
   title: string;
   thumbnails: {
@@ -93,11 +124,4 @@ interface ParseMovieData {
   }[];
 }
 
-interface MovieLike {
-  id: number;
-  user_id: number;
-  movie_id: number;
-  created_at: Date;
-}
-
-export { Video, VideoSnippet, Response, MovieTrailerDetail, MovieComments, Posts, ParseMovieData, MovieLike, MovieDetailAndMore };
+export { Video, VideoSnippet, Response, MovieTrailerDetail, MovieComments, Posts, ParseMovieData, MovieDetailAndMore, LikeWithMainMovie, BestMovie, MainMovie, AllMainMovie };

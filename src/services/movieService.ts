@@ -1,17 +1,15 @@
 import { MovieRepository } from '../repositories/movieRepository';
-import { MovieTrailerDetail, ParseMovieData } from '../dto/movie.dto';
+import { MovieTrailerDetail, ParseMovieData, AllMainMovie } from '../dto/movie.dto';
 import { YoutubeApi } from '../utils/youtube';
-import { MovieLike } from '../dto/movie.dto';
 import dotenv from 'dotenv';
 import MyCustomError from '../utils/customError';
 
 dotenv.config();
-//: Promise<ParseMovieData>
 
 class MovieService {
   constructor(private Repository: MovieRepository, private Youtube: YoutubeApi) {}
 
-  public getMovieTrailerDetail = async (movieId: number, skip: number, take: number, userId: number) => {
+  public getMovieTrailerDetail = async (movieId: number, skip: number, take: number, userId: number):Promise<ParseMovieData> => {
     const movieTrailerDetailData: MovieTrailerDetail = await this.Repository.getMovieTrailerDetail(movieId, userId);
     const categoryId = movieTrailerDetailData?.category?.id;
     const movieDetailAndMore = await this.Repository.getMovieDetailAndMore(movieId, skip, take, Number(categoryId));
@@ -40,7 +38,7 @@ class MovieService {
     return result;
   };
 
-  public movieLikeCreateAndDelete = async (userId: number, movieId: number) => {
+  public movieLikeCreateAndDelete = async (userId: number, movieId: number):Promise<string> => {
     const likeExists = await this.Repository.likeExists(userId, movieId);
 
     if (!likeExists) {
@@ -73,7 +71,7 @@ class MovieService {
     return result;
   };
 
-  public movieMainPage = async (skip: number, take: number) => {
+  public movieMainPage = async (skip: number, take: number):Promise<AllMainMovie> => {
     return await this.Repository.movieMainPage(skip, take);
   };
 }

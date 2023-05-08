@@ -1,7 +1,7 @@
-import { Prisma, PrismaClient } from '@prisma/client';
-import MyCustomError from '../utils/customError';
+import {Prisma, PrismaClient} from '@prisma/client'
 import { prisma } from '../repositories/prisma';
-import { MovieTrailerDetail, MovieComments, Posts, MovieLike, MovieDetailAndMore } from '../dto/movie.dto';
+import MyCustomError from '../utils/customError'
+import { MovieTrailerDetail, MovieComments, Posts, MovieDetailAndMore, LikeWithMainMovie, BestMovie, MainMovie, AllMainMovie } from '../dto/movie.dto';
 
 class MovieRepository {
   private readonly prisma: PrismaClient;
@@ -46,6 +46,7 @@ class MovieRepository {
         },
       },
     });
+
     if (!movie) {
       throw new MyCustomError(`Movie with id ${movieId} not found`, 400);
     }
@@ -157,7 +158,7 @@ class MovieRepository {
     return likeExists;
   };
 
-  public createMovieLike = async (userId: number, movieId: number) => {
+  public createMovieLike = async (userId: number, movieId: number):Promise<string> => {
     await this.prisma.movieLike.create({
       data: {
         user_id: userId,
@@ -167,7 +168,7 @@ class MovieRepository {
     return 'createMovieLike SUCCESS';
   };
 
-  public deleteMovieLike = async (userId: number, movieId: number) => {
+  public deleteMovieLike = async (userId: number, movieId: number):Promise<string> => {
     await this.prisma.$transaction([
       this.prisma.movieLike.deleteMany({
         where: {
@@ -210,8 +211,8 @@ class MovieRepository {
     });
   };
 
-  movieMainPage = async (skip: number, take: number) => {
-    const latestMovie = await this.prisma.movie.findMany({
+    movieMainPage = async (skip: number, take: number): Promise<AllMainMovie> => {
+    const latestMovie: MainMovie[] = await this.prisma.movie.findMany({
       skip: skip,
       take: take,
       select: {
@@ -221,6 +222,9 @@ class MovieRepository {
         poster_img: true,
       },
       where: {
+        release_date: {
+          not: null,
+        },
         poster_img: {
           not: null,
         },
@@ -230,7 +234,7 @@ class MovieRepository {
       },
     });
 
-    const koreanMovie = await this.prisma.movie.findMany({
+    const koreanMovie: MainMovie[] = await this.prisma.movie.findMany({
       skip: skip,
       take: take,
       where: {
@@ -247,7 +251,7 @@ class MovieRepository {
       },
     });
 
-    const koreanMovieWithLikes = await Promise.all(
+    const koreanMovieWithLikes: LikeWithMainMovie[] = await Promise.all(
       koreanMovie.map(async (movie) => {
         const likes = await this.prisma.movieLike.count({
           where: {
@@ -259,7 +263,7 @@ class MovieRepository {
     );
     koreanMovieWithLikes.sort((a, b) => b.likes - a.likes);
 
-    const foreignMovies = await this.prisma.movie.findMany({
+    const foreignMovies: MainMovie[] = await this.prisma.movie.findMany({
       skip: skip,
       take: take,
       where: {
@@ -278,7 +282,7 @@ class MovieRepository {
       },
     });
 
-    const foreignMovieWithLikes = await Promise.all(
+    const foreignMovieWithLikes: LikeWithMainMovie[] = await Promise.all(
       foreignMovies.map(async (movie) => {
         const likes = await this.prisma.movieLike.count({
           where: {
@@ -294,7 +298,7 @@ class MovieRepository {
       by: ['movie_id'],
     });
 
-    const bestMovie = await this.prisma.movie.findMany({
+    const bestMovie: BestMovie[] = await this.prisma.movie.findMany({
       where: {
         id: {
           in: movieLikes.map((like) => like.movie_id),
