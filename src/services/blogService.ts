@@ -14,8 +14,12 @@ class blogService {
     return this.Repository.createPost(userId, title, content, categoryId, spoilerInfoId, thumbnail);
   }
 
-  public async readPost (userId: number, postId: number): Promise<{postDetails: IpostDetails; comments: Icomments[];}> {
+  public async readPost (userId: number, postId: number): Promise<{postDetails: IpostDetails;}> {
     return this.Repository.readPost(userId, postId);
+  }
+
+  public async getPostComments (postId: number) {
+    return this.Repository.getPostComments(postId);
   }
 
   public async updatePost (postId: number, userId: number, title: string, content: string, categoryId: number, spoilerInfoId: number, thumbnail: string): Promise<void> {
@@ -36,9 +40,9 @@ class blogService {
 
   public async getDataForBlogMainPage (take: number, skip: number, userId: number, categoryId: number ) {
     const [spoPostData, nonSpoPostData, category, spoilerInfo] = await Promise.all([
-      this.Repository.getfilteredSpoOrNonspoPostData(take, skip, this.SPOILER_TYPES.spoiler, categoryId), 
-      this.Repository.getfilteredSpoOrNonspoPostData(take, skip, this.SPOILER_TYPES.nonSpoiler, categoryId), 
-      this.Repository.category(), 
+      this.Repository.getfilteredSpoOrNonspoPostData(take, skip, this.SPOILER_TYPES.spoiler, categoryId, userId), 
+      this.Repository.getfilteredSpoOrNonspoPostData(take, skip, this.SPOILER_TYPES.nonSpoiler, categoryId, userId), 
+      this.Repository.category(),
       this.Repository.spoilerInfo()
     ]);
     if (!userId) return { spoPostData, nonSpoPostData, category, spoilerInfo }

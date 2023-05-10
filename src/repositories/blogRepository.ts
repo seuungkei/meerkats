@@ -24,7 +24,7 @@ class blogRepository {
     return createPost.id;
   };
 
-  async readPost (userId: number, postId: number): Promise<{postDetails: IpostDetails; comments: Icomments[];}> {
+  async readPost (userId: number, postId: number): Promise<{postDetails: IpostDetails;}> {
     const postDetails: IpostDetails | null = await this.prisma.post.findUnique({
       where: {
         id: postId,
@@ -78,29 +78,31 @@ class blogRepository {
       postDetails.isScrapedByThisUser = isScrapedByThisUser;
     }
 
-    const comments: Icomments[] = (await this.prisma.postComment.findMany({
-      where: {
-        post_id: postId,
-      },
-      orderBy: {
-        created_at: 'asc',
-      },
-      select: {
-        id: true,
-        content: true,
-        created_at: true,
-        user: {
-          select: {
-            id: true,
-            nickname: true,
-          }
+    return { postDetails };
+  }
+
+  async getPostComments (postId: number) {
+    return (await this.prisma.postComment.findMany({
+    where: {
+      post_id: postId,
+    },
+    orderBy: {
+      created_at: 'asc',
+    },
+    select: {
+      id: true,
+      content: true,
+      created_at: true,
+      user: {
+        select: {
+          id: true,
+          nickname: true,
         }
       }
-    }))?.map((data: { id: number, content: string, created_at: Date, user: { id: number, nickname: string | null}}) => {
+    }
+  }))?.map((data: { id: number, content: string, created_at: Date, user: { id: number, nickname: string | null}}) => {
       return { commentId: data.id, content: data.content, created_at: data.created_at, user: data.user };
     })
-
-    return { postDetails, comments };
   }
 
   async updatePost (postId: number, userId: number, title: string, content: string, categoryId: number, spoilerInfoId: number, thumbnail: string): Promise<void> {
@@ -142,7 +144,7 @@ class blogRepository {
     ])
   };
 
-  async getfilteredSpoOrNonspoPostData(take: number, skip: number, spoilerInfoId: number, categoryId: number): Promise<IfilteredPostData[]> {
+  async getfilteredSpoOrNonspoPostData(take: number, skip: number, spoilerInfoId: number, categoryId: number, userId?: number): Promise<IfilteredPostData[]> {
     const prismaQeury: any = {
       where: {
         spoiler_info_id: spoilerInfoId
@@ -177,9 +179,23 @@ class blogRepository {
 
     const postData = await this.prisma.post.findMany(prismaQeury);
 
-    const result = await Promise.all(postData.map(async (data) => {
+    const result = await Promise.all(postData.map(async (data: any) => {
       const likeCount = await this.likeCount(data.id);
       const commentCount = await this.commentCount(data.id);
+
+      data.isLikedByThisUser = false;
+
+      if (userId) {
+        const isLikedByThisUser: boolean = await this.prisma.postLike.findFirst({
+          where: {
+            user_id: userId,
+            post_id: data.id,
+          }
+        }) !== null;
+
+        data.isLikedByThisUser = isLikedByThisUser;
+      }
+      
       return {
         ...data,
         likeCount,
