@@ -14,8 +14,12 @@ class blogService {
     return this.Repository.createPost(userId, title, content, categoryId, spoilerInfoId, thumbnail);
   }
 
-  public async readPost (userId: number, postId: number): Promise<{postDetails: IpostDetails; comments: Icomments[];}> {
+  public async readPost (userId: number, postId: number): Promise<{postDetails: IpostDetails;}> {
     return this.Repository.readPost(userId, postId);
+  }
+
+  public async getPostComments (postId: number) {
+    return this.Repository.getPostComments(postId);
   }
 
   public async updatePost (postId: number, userId: number, title: string, content: string, categoryId: number, spoilerInfoId: number, thumbnail: string): Promise<void> {
@@ -113,6 +117,10 @@ class blogService {
     const isCommentByThisUser = await this.Repository.isCommentByThisUser(userId, postCommentId);
     if (!isCommentByThisUser) throw new MyCustomError("This comment was not written by this user, FAILED", 403);
     return this.Repository.deleteComment(postCommentId);
+  }
+
+  public async getCategoryList () {
+    return this.Repository.category();
   }
 }
 

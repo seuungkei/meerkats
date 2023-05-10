@@ -43,8 +43,17 @@ class blogController {
       throw new MyCustomError("somthing not exist error, FAILED", 400);    
 
     await this.Service.updatePost(Number(postId), userId, title, content, categoryId, spoilerInfoId, thumbnail);
-    return res.status(201).json({ message: "updatePost SUCCESS" });   
+    return res.status(201).json({ message: "updatePost SUCCESS" }); 
   });
+
+  public getPostComments = catchAsync(async (req, res) => {
+    const { postId } = req.params;
+
+    if (!postId) throw new MyCustomError("postId must be defined, FAILED", 400);
+
+    const postComments = await this.Service.getPostComments(Number(postId));
+    return res.status(200).json({ data: postComments });
+  })
 
   public deletePost = catchAsync(async (req: Request<ParamsDictionary, {}, { userId: number }, {}> & IReqUser, res: Response) => {
     const userId = req.user;
@@ -146,6 +155,11 @@ class blogController {
     await this.Service.deleteComment(userId, Number(postCommentId));
     return res.status(200).json({ message: "deleteComment SUCCESS"});
   });
+
+  public getCategoryList = catchAsync(async(req: Request, res: Response) => {
+    const categoryList = await this.Service.getCategoryList();
+    return res.status(200).json({ data: categoryList});
+  })
 }
 
 export {
