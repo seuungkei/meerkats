@@ -12,6 +12,7 @@ const getBlogDataController = new blogController(new blogService(new blogReposit
 router.post("", loginRequired, getBlogDataController.createPost);
 router.post("/main", optionalRequired, getBlogDataController.getDataForBlogMainPage);
 router.post("/:postId", optionalRequired, getBlogDataController.readPost);
+router.get("/:postId", getBlogDataController.getPostComments);
 router.patch("/:postId", loginRequired, getBlogDataController.updatePost);
 router.delete("/:postId", loginRequired, getBlogDataController.deletePost);
 router.get("/main/post", getBlogDataController.getfilteredSpoOrNonspoPostData);
