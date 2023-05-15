@@ -10,6 +10,15 @@ class userController {
   constructor(private Service: userService) {
   }
 
+  public googleLogin = catchAsync(async (req: Request, res: Response) => {
+    const googleToken: string | undefined = req.headers.authorization;
+
+    if (!googleToken) throw new MyCustomError("googleToken must be defined", 400);
+
+    const { accessToken, userNickname, status } =  await this.Service.googleLogin(googleToken);
+    return res.status(status).json({ accessToken, userNickname });
+  })
+
   public kakaoLogin = catchAsync(async (req: Request, res: Response) => {
     const kakaoToken: string | undefined = req.headers.authorization;
   
@@ -77,14 +86,14 @@ class userController {
     return res.status(201).json(jwtToken);
   });
 
-  public googleLogin = catchAsync(async (req: Request, res: Response) => {
-    const googleToken: string | undefined = req.headers.authorization;
+  // public googleLogin = catchAsync(async (req: Request, res: Response) => {
+  //   const googleToken: string | undefined = req.headers.authorization;
   
-    if (!googleToken) throw new MyCustomError("kakaoToken must be defined", 400);
+  //   if (!googleToken) throw new MyCustomError("kakaoToken must be defined", 400);
   
-    const { accessToken, userNickname, status } = await this.Service.kakaoLogin(googleToken);
-    return res.status(status).json({ accessToken, userNickname });
-  });
+  //   const { accessToken, userNickname, status } = await this.Service.kakaoLogin(googleToken);
+  //   return res.status(status).json({ accessToken, userNickname });
+  // });
 }
 
 export {

@@ -22,6 +22,30 @@ class userService {
     this.JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
   }
 
+  public async googleLogin  (googleToken: string | undefined): Promise<{accessToken: string; userNickname: string | null; status: number;}> {
+    if(!this.JWT_SECRET_KEY) throw new MyCustomError('JWT_SECRET must be defined', 500);
+    
+    const {nickname, email, socialId} = await this._getGoogleUserData(googleToken);
+    const user = await this.Repository.getSocialUser(socialId);
+    
+    return user? await this._ifExistUser(user, this.JWT_SECRET_KEY) : await this._ifNotExistUser(nickname, email, socialId, this.JWT_SECRET_KEY, this.SOCIAL_TYPES.google);
+  };
+
+  private async _getGoogleUserData (googleToken: string | undefined) {
+    const { data } = await axios.get("https://www.googleapis.com/oauth2/v3/userinfo", {
+      headers: {
+        authorization: `Bearer ${googleToken}`,
+        "Content-type": "application/x-www-form-urlencoded;charset=utf-8",
+      },
+    });
+  
+    const nickname: string = data.name;
+    const email: string = data.email;
+    const socialId: string = data.sub.toString();
+
+    return {nickname, email, socialId};
+  }
+
   public async kakaoLogin  (kakaoToken: string | undefined): Promise<{accessToken: string; userNickname: string | null; status: number;}> {
     if(!this.JWT_SECRET_KEY) throw new MyCustomError('JWT_SECRET must be defined', 500);
 
@@ -155,30 +179,6 @@ class userService {
 
     return { accessToken: jwtToken };
   };
-
-  public async googleLogin  (kakaoToken: string | undefined): Promise<{accessToken: string; userNickname: string | null; status: number;}> {
-    if(!this.JWT_SECRET_KEY) throw new MyCustomError('JWT_SECRET must be defined', 500);
-
-    const {nickname, email, socialId} = await this._getGoogleUserData(kakaoToken);
-    const user = await this.Repository.getSocialUser(socialId);
-
-    return user? await this._ifExistUser(user, this.JWT_SECRET_KEY) : await this._ifNotExistUser(nickname, email, socialId, this.JWT_SECRET_KEY, this.SOCIAL_TYPES.google);
-  };
-
-  private async _getGoogleUserData (googleToken: string | undefined): Promise<{nickname: string; email: string; socialId: string;}> {
-    const { data } = await axios.get("https://kapi.kakao.com/v2/user/me", {
-      headers: {
-        authorization: `Bearer ${googleToken}`,
-        "Content-type": "application/x-www-form-urlencoded;charset=utf-8",
-      },
-    });
-  
-    const nickname: string = data.properties.nickname;
-    const email: string = data.kakao_account.email;
-    const socialId: string = data.id.toString();
-
-    return {nickname, email, socialId};
-  }
 }
 
 export {
